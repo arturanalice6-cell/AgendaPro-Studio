@@ -22,30 +22,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+ useEffect(() => {
+  const init = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    setSession(session);
+    setUser(session?.user ?? null);
+
+    if (session?.user) {
+      await fetchRole(session.user.id);
+    } else {
+      setRole(null);
+      setLoading(false);
+    }
+  };
+
+  init();
+
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
       if (session?.user) {
-        setTimeout(() => fetchRole(session.user.id), 0);
+        await fetchRole(session.user.id);
       } else {
         setRole(null);
         setLoading(false);
       }
-    });
+    }
+  );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRole(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  return () => subscription.unsubscribe();
+}, []);
 
   async function fetchRole(userId: string) {
     const { data } = await supabase
