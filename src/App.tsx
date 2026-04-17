@@ -16,13 +16,7 @@ import { ReactNode } from "react";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
-  let auth;
-
-  try {
-    auth = useAuth();
-  } catch {
-    return null;
-  }
+ const { user, loading } = useAuth();
 
   const { user, loading } = auth;
 
