@@ -106,15 +106,25 @@ const handleResetPassword = async () => {
                   minLength={6}
                 />
               </div>
-              <Button type="submit" className="w-full gradient-primary" disabled={submitting}>
-<span
-  onClick={handleResetPassword}
-  className="block w-full text-sm text-white mt-2 text-center cursor-pointer hover:underline"
->
-  Esqueci minha senha
-</span>
-                {submitting ? 'Aguarde...' : isSignUp ? 'Criar Conta' : 'Entrar'}
-              </Button>
+             <div className="flex flex-col gap-3 pt-2">
+  
+  <Button
+    type="submit"
+    className="w-full gradient-primary"
+    disabled={submitting}
+  >
+    {submitting ? 'Aguarde...' : isSignUp ? 'Criar Conta' : 'Entrar'}
+  </Button>
+
+  <button
+    type="button"
+    onClick={handleResetPassword}
+    className="text-sm text-muted-foreground hover:text-primary transition text-center"
+  >
+    Esqueci minha senha
+  </button>
+
+</div>
             </form>
             <button
               onClick={() => setIsSignUp(!isSignUp)}

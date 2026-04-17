@@ -95,7 +95,7 @@ const statusLabel: Record<string, string> = {
 };
 
 const publicLink = business 
-  ? `${window.location.origin}/p/${business.id}` 
+  ? `https://agendaprostudio.com/p/${business.id}` 
   : '';
 
 const copyLink = () => {
