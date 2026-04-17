@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        await fetchRole(session.user.id);
+        fetchRole(session.user.id);
       } else {
         setRole(null);
         setLoading(false);
@@ -55,37 +55,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return () => subscription.unsubscribe();
 }, []);
-
-  async function fetchRole(userId: string) {
+async function fetchRole(userId: string) {
+  try {
     const { data } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
       .maybeSingle();
 
-// 🔥 INICIAR TRIAL NO PRIMEIRO LOGIN
-const { data: biz } = await supabase
-  .from('businesses')
-  .select('id, trial_ends_at')
-  .eq('user_id', userId)
-  .maybeSingle();
+    const { data: biz } = await supabase
+      .from('businesses')
+      .select('id, trial_ends_at')
+      .eq('user_id', userId)
+      .maybeSingle();
 
-if (biz && !biz.trial_ends_at) {
-  const trialDate = new Date();
-  trialDate.setDate(trialDate.getDate() + 15);
+    if (biz && !biz.trial_ends_at) {
+      const trialDate = new Date();
+      trialDate.setDate(trialDate.getDate() + 15);
 
-  await supabase
-    .from('businesses')
-    .update({
-      trial_ends_at: trialDate.toISOString()
-    })
-    .eq('id', biz.id);
+      await supabase
+        .from('businesses')
+        .update({
+          trial_ends_at: trialDate.toISOString()
+        })
+        .eq('id', biz.id);
+    }
 
-  console.log("🔥 Trial iniciado:", trialDate);
-}
     setRole((data?.role as AppRole) ?? 'professional');
+
+  } catch (err) {
+    console.error("ERRO fetchRole:", err);
+    setRole('professional');
+  } finally {
     setLoading(false);
   }
+}
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
