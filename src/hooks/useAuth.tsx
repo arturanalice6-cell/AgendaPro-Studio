@@ -22,25 +22,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
 
- useEffect(() => {
+useEffect(() => {
   const init = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+   const { data } = await supabase.auth.getSession();
 
-    setSession(session);
-    setUser(session?.user ?? null);
+const session = data.session;
 
-    if (session?.user) {
-      await fetchRole(session.user.id);
+setSession(session);
+setUser(session?.user ?? null);
+if (user) {
+    fetchRole(user.id);
     } else {
       setRole(null);
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   init();
 
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (_event, session) => {
+    (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -48,13 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchRole(session.user.id);
       } else {
         setRole(null);
-        setLoading(false);
       }
     }
   );
 
   return () => subscription.unsubscribe();
 }, []);
+
 async function fetchRole(userId: string) {
   try {
     const { data } = await supabase
@@ -86,9 +88,7 @@ async function fetchRole(userId: string) {
   } catch (err) {
     console.error("ERRO fetchRole:", err);
     setRole('professional');
-  } finally {
-    setLoading(false);
-  }
+   }
 }
 
   const signIn = async (email: string, password: string) => {

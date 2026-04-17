@@ -1,10 +1,19 @@
 import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { CalendarCheck, Scissors, Star, Zap, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Index() {
   const navigate = useNavigate();
+const { user, loading } = useAuth();
+
+if (loading) return null;
+
+if (user) {
+  return <Navigate to="/dashboard" replace />;
+}
 
   return (
     <div className="dark min-h-screen bg-background">
