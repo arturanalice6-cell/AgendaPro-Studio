@@ -1,3 +1,5 @@
+console.log("ARQUIVO PUBLICBOOKING CARREGADO");
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +18,12 @@ import { cn } from '@/lib/utils';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Business = Tables<'businesses'>;
-type Service = Tables<'services'>;
+type Service = {
+  id: string;
+  name: string;
+  price: number;
+  duration_minutes: number;
+};
 
 export default function PublicBookingPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,13 +67,13 @@ console.log("DEBUG STATE:", {
     if (!biz) { setLoading(false); return; }
     setBusiness(biz);
 
-  const { data: svcs } = await supabase
+const { data: svcs } = await supabase
   .from('services')
-  .select('*')
+  .select('id, name, price, duration_minutes')
   .eq('business_id', biz.id)
   .order('name');
 
-console.log("SERVICES:", svcs); 
+console.log("SERVICES COMPLETO:", svcs);
 
 setServices(svcs || []);
 
@@ -104,7 +111,7 @@ console.log("SCHEDULE ENCONTRADO:", schedule);
     // Get existing appointments for this date
    const { data: existing } = await supabase
   .from('appointments')
-  .select('time, service_name')
+  .select('time, service_name, status')
   .eq('business_id', business.id) // 👈 ADICIONA ESSA LINHA
   .eq('date', format(selectedDate, 'yyyy-MM-dd'));
 
@@ -124,9 +131,11 @@ const slotDateTime = new Date(selectedDate);
 slotDateTime.setHours(cursor.getHours(), cursor.getMinutes(), 0, 0);
 
 const isPast = slotDateTime < now;
-      
- const conflict = (existing || []).some(a => {
+      const conflict = (existing || []).some(a => {
   if (!a.time) return false;
+
+  // 🚨 IGNORA CANCELADO
+  if (a.status === "cancelled") return false;
 
   const service = services.find(s => s.name === a.service_name);
   const duration = service?.duration_minutes || 30;
@@ -203,20 +212,28 @@ setLoadingSlots(false);
 
   const handleBook = async () => {
     if (!selectedService || !selectedDate || !selectedTime || !business) return;
+
+console.log("SERVICE COMPLETO:", selectedService);
+console.log("PRICE RAW:", selectedService.price);
+console.log("PRICE NUMBER:", Number(selectedService.price));
+console.log("PRICE DO SERVIÇO:", selectedService.price);
     setBooking(true);
     try {
-     const { data, error } = await supabase
+  
+ const serviceFull = services.find(s => s.id === selectedService.id); 
+
+const { data, error } = await supabase
   .from('appointments')
   .insert({
   client_name: clientName,
-business_id: business.id,
+  business_id: business.id,
   phone: clientWhatsapp,
   service_name: selectedService.name,
+ price: Number(serviceFull?.price) || 0,
   date: format(selectedDate, 'yyyy-MM-dd'),
   time: selectedTime,
-})
-  .select()
-  .single();
+  status: "confirmed"
+});
 
 console.log("INSERT DATA:", data);
 console.log("INSERT ERROR:", error);
@@ -447,7 +464,10 @@ onClick={() => {
             <Button
               className="w-full gradient-primary"
               disabled={!clientName || !clientWhatsapp || booking}
-              onClick={handleBook}
+            onClick={() => {
+  console.log("CLICOU NO BOTÃO");
+  handleBook();
+}}
             >
               {booking ? 'Agendando...' : 'Confirmar Agendamento'}
             </Button>
