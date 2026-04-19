@@ -19,7 +19,6 @@ import ScheduleManager from '@/components/ScheduleManager';
 import BusinessSetup from '@/components/BusinessSetup';
 import AppointmentList from '@/components/AppointmentList';
 import { RevenueCards } from '@/components/RevenueCards';
-import { RevenueCardsWeeks } from '@/components/RevenueCardsWeeks';
 
 type Business = Tables<'businesses'>;
 type Service = Tables<'services'>;
@@ -159,7 +158,6 @@ const deleteService = async (id: string) => {
 
  {/* 💰 FATURAMENTO */}
   <RevenueCards businessId={business.id} />
-<RevenueCardsWeeks businessId={business.id} />
 
   {/* 🔥 CAPA DO NEGÓCIO (SEMPRE VISÍVEL) */}
  <div className="relative w-full aspect-[3/1] rounded-lg overflow-hidden bg-gray-800">
