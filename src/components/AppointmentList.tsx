@@ -45,6 +45,7 @@ export default function AppointmentList({ businessId }: { businessId: string }) 
       )}
       {appointments
   .filter((apt) => {
+  if (apt.status === 'cancelled') return false; // 👈 ADICIONA ISSO
     if (!apt.date || !apt.time) return false;
 
     const now = new Date();

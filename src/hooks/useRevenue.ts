@@ -62,13 +62,16 @@ async function fetchRevenue() {
   .lte("date", endWeekStr);
   
 // 📊 MÊS (até hoje, sem futuro)
- const { data: monthData } = await supabase
+const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+const endMonthStr = endOfMonth.toISOString().split("T")[0];
+
+const { data: monthData } = await supabase
   .from("appointments")
   .select("price")
   .eq("business_id", businessId)
   .in("status", ["confirmed", "completed"])
   .gte("date", startMonthStr)
-  .lte("date", todayStr);
+  .lte("date", endMonthStr);
 
   const sum = (arr: any[]) =>
     arr?.reduce((acc, item) => acc + (item.price || 0), 0) || 0;

@@ -111,7 +111,7 @@ console.log("SCHEDULE ENCONTRADO:", schedule);
     // Get existing appointments for this date
    const { data: existing } = await supabase
   .from('appointments')
-  .select('time, service_name, status')
+  .select('time, service_id, status')
   .eq('business_id', business.id) // 👈 ADICIONA ESSA LINHA
   .eq('date', format(selectedDate, 'yyyy-MM-dd'));
 
@@ -137,7 +137,7 @@ const isPast = slotDateTime < now;
   // 🚨 IGNORA CANCELADO
   if (a.status === "cancelled") return false;
 
-  const service = services.find(s => s.name === a.service_name);
+  const service = services.find(s => s.id === a.service_id);
   const duration = service?.duration_minutes || 30;
 
   const [h, m] = a.time.split(':').map(Number);
@@ -157,7 +157,8 @@ if (!isPast && !conflict) {
   });
 }
       cursor = addMinutes(cursor, 30);
-
+}
+    
 if (schedule.start_time_2 && schedule.end_time_2) {
   let cursor2 = parse(schedule.start_time_2.substring(0, 5), 'HH:mm', selectedDate);
   const end2 = parse(schedule.end_time_2.substring(0, 5), 'HH:mm', selectedDate);
@@ -168,12 +169,11 @@ if (schedule.start_time_2 && schedule.end_time_2) {
     const slotDateTime = new Date(selectedDate);
     slotDateTime.setHours(cursor2.getHours(), cursor2.getMinutes(), 0, 0);
 
-    const isPast =
-      isSameDay(slotDateTime, now) &&
-      isBefore(slotDateTime, now);
+    const isPast = slotDateTime < now;
 
     const conflict = (existing || []).some(a => {
       if (!a.time) return false;
+      if (a.status === "cancelled") return false;
 
       const service = services.find(s => s.name === a.service_name);
       const duration = service?.duration_minutes || 30;
@@ -189,18 +189,14 @@ if (schedule.start_time_2 && schedule.end_time_2) {
     });
 
     if (!isPast && !conflict) {
-     if (!slots.find(s => s.time === timeStr)) {
-  slots.push({
-    time: timeStr,
-    available: true
-  });
-}
+      if (!slots.find(s => s.time === timeStr)) {
+        slots.push({ time: timeStr, available: true });
+      }
     }
 
     cursor2 = addMinutes(cursor2, 30);
   }
 }
-    }
 
    const sortedSlots = slots.sort((a, b) => {
   return a.time.localeCompare(b.time);
@@ -225,15 +221,31 @@ console.log("PRICE DO SERVIÇO:", selectedService.price);
 const { data, error } = await supabase
   .from('appointments')
   .insert({
-  client_name: clientName,
-  business_id: business.id,
-  phone: clientWhatsapp,
-  service_name: selectedService.name,
- price: Number(serviceFull?.price) || 0,
-  date: format(selectedDate, 'yyyy-MM-dd'),
-  time: selectedTime,
-  status: "confirmed"
-});
+    client_name: clientName,
+    business_id: business.id,
+    phone: clientWhatsapp,
+    service_id: selectedService.id,
+service_name: selectedService.name,
+    price: Number(serviceFull?.price) || 0,
+    date: format(selectedDate, 'yyyy-MM-dd'),
+    time: selectedTime,
+    status: "confirmed"
+  });
+
+if (error) {
+  console.error("ERRO AO SALVAR:", error);
+
+  if (error.code === "23505") {
+    toast.error("Esse horário acabou de ser reservado. Escolha outro.");
+    setSelectedTime(null);
+    setShowModal(false);
+    computeSlots(); // recarrega horários
+    return;
+  }
+
+  toast.error("Erro ao agendar");
+  return;
+}
 
 console.log("INSERT DATA:", data);
 console.log("INSERT ERROR:", error);
@@ -256,6 +268,8 @@ const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)
 window.open(whatsappUrl, '_blank');
       setBooked(true);
       toast.success('Agendamento confirmado!');
+await computeSlots();
+setSelectedTime(null);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
