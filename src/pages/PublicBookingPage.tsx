@@ -320,7 +320,7 @@ if (business.status === 'blocked') {
           <p className="text-muted-foreground text-sm">
             {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: ptBR })} às {selectedTime}
           </p>
-          <p className="text-xs text-muted-foreground mt-4">Você receberá uma confirmação no WhatsApp.</p>
+          <p className="text-xs text-muted-foreground mt-4">Agendamento confirmado.</p>
         </motion.div>
       </div>
     );
