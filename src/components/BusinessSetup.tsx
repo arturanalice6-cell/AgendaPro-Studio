@@ -50,6 +50,8 @@ const { user } = useAuth();
     .replace(/(^-|-$)/g, '');
 
   async function uploadFile(file: File, path: string) {
+const trialEnd = new Date();
+trialEnd.setDate(trialEnd.getDate() + 15);
     const { data, error } = await supabase.storage
       .from('business-assets')
       .upload(path, file, { upsert: true });
@@ -94,6 +96,8 @@ console.log("🚀 INICIOU SUBMIT");
 
 } else {
   // ➕ INSERT (quando é novo)
+const trialEnd = new Date();
+trialEnd.setDate(trialEnd.getDate() + 15);
   const { data, error } = await supabase
     .from('businesses')
     .insert({
@@ -103,6 +107,7 @@ console.log("🚀 INICIOU SUBMIT");
       phone: whatsapp,
       cover_url,
       logo_url,
+trial_ends_at: trialEnd.toISOString(),
     })
     .select()
     .single();
