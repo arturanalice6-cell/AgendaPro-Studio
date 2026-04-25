@@ -18,7 +18,7 @@ if (user) {
   return (
     <div className="dark min-h-screen bg-background">
       {/* Header */}
-      <header className="container flex items-center justify-between h-16">
+      <header className="px-4 flex items-center justify-between h-16">
         <div className="flex items-center gap-2">
           <CalendarCheck className="h-6 w-6 text-primary" />
           <span className="font-heading font-bold text-lg text-foreground">AgendaPro Studio</span>
@@ -29,21 +29,21 @@ if (user) {
       </header>
 
       {/* Hero */}
-      <main className="container">
+      <main className="px-4">
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="py-20 text-center max-w-2xl mx-auto"
+          className="py-12 md:py-20 text-center max-w-4xl mx-auto"
         >
-          <h1 className="text-4xl md:text-5xl font-heading font-bold text-foreground leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground leading-tight">
             Agendamento <span className="text-gradient">inteligente</span> para seu negócio
           </h1>
           <p className="text-muted-foreground mt-4 text-lg">
             Barbearias, salões, lash design e muito mais. Receba agendamentos 24h pelo celular.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
-            <Button size="lg" className="gradient-primary gap-2" onClick={() => navigate('/login')}>
+            <Button size="lg" className="gradient-primary gap-2 w-full sm:w-auto" onClick={() => navigate('/login')}>
               Começar Grátis <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -51,7 +51,7 @@ if (user) {
         </motion.section>
 
         {/* Features */}
-        <section className="grid md:grid-cols-3 gap-6 py-16">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 py-8 px-2">
           {[
             { icon: Scissors, title: 'Multi-serviço', desc: 'Cadastre todos os seus serviços com preço e duração.' },
             { icon: Zap, title: 'Link Compartilhável', desc: 'Envie seu link pelo WhatsApp e receba agendamentos.' },
